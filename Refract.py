@@ -38,15 +38,14 @@ async def on_member_join(member):
 @client.event
 async def on_message(message):
 	if(message.content.startswith('!1984')):
-		await nineteenEightyFour(message.author.server, 6);
+		await nineteenEightyFour(message.channel, 6);
 	elif(message.content.startswith('!games')):
-		await games(message.author.server);
+		await games(message.server, message.channel);
 	elif(message.content == '!timePlayed'):
-		await timePlayedRead(message.author.server);
+		await timePlayedRead(message.server, message.channel);
 
-async def nineteenEightyFour(server, loops):
-	print(server.members);
-	msg = await client.send_message(server, "War Is Peace!");
+async def nineteenEightyFour(channel, loops):
+	msg = await client.send_message(channel, "War Is Peace!");
 	mod = 1;
 	await asyncio.sleep(1);
 	for i in range(0, loops-1):
@@ -54,7 +53,7 @@ async def nineteenEightyFour(server, loops):
 		mod = (mod + 1) % 3;
 		await asyncio.sleep(1);
 
-async def games(server):
+async def games(server, channel):
 	played = [];
 	for member in server.members:
 		try:
@@ -69,10 +68,10 @@ async def games(server):
 		except AttributeError:
 			pass;
 	played.sort(key=lambda x: -x[1]);
-	await client.send_message(server, "The games being played on this server are:");
+	await client.send_message(channel, "The games being played on this server are:");
 	for game in played:
 		await asyncio.sleep(1);
-		await client.send_message(server, game[0] + ': ' + str(game[1]) + " player(s)");
+		await client.send_message(channel, game[0] + ': ' + str(game[1]) + " player(s)");
 
 
 async def timePlayedCounter():
@@ -95,7 +94,7 @@ async def timePlayedCounter():
 		conn.commit();
 		await asyncio.sleep(900);		# 15 minute loop
 
-async def timePlayedRead(server):
+async def timePlayedRead(server, channel):
 	command = "SELECT name, SUM(timePlayed) from games WHERE player IN (";
 	members = list(server.members);
 	for i in range(0, len(members)):
@@ -108,7 +107,7 @@ async def timePlayedRead(server):
 	if(row == (None, None)):
 		return(None);
 	while(row != None):
-		await client.send_message(server, str(row[0]) + ' has been played for: ' + str(row[1]/60) + ' hour(s)');
+		await client.send_message(channel, str(row[0]) + ' has been played for: ' + str(row[1]/60) + ' hour(s)');
 		await asyncio.sleep(1);
 		row = c.fetchone();
 
